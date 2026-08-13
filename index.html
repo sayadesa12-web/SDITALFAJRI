@@ -184,9 +184,7 @@
 
   <!-- SCRIPT LOGIKA APLIKASI -->
   <script>
-    // ==========================================
-    // PASTE URL WEB APP APPS SCRIPT ANDA DI SINI
-    // ==========================================
+    // URL Web App Google Apps Script milik Anda
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHCErmQ1ZlFWdtEPAdsZHoFVDAx8vXQ_OI8rT4SU2MieTbH5pp_yqcgo2JQcknCFdM/exec";
 
     let rawDataAbsensi = [];
@@ -265,11 +263,6 @@
 
     // Ambil Data Presensi dari Google Sheets
     async function muatRekapHariIni() {
-      if (SCRIPT_URL === "https://script.google.com/macros/s/AKfycbzHCErmQ1ZlFWdtEPAdsZHoFVDAx8vXQ_OI8rT4SU2MieTbH5pp_yqcgo2JQcknCFdM/exec" || !SCRIPT_URL) {
-        console.warn("URL Web App belum diisi!");
-        return;
-      }
-
       try {
         const response = await fetch(SCRIPT_URL, {
           method: "GET",
@@ -289,11 +282,6 @@
     // Submit Form Presensi
     async function handleFormSubmit(e) {
       if (e) e.preventDefault();
-
-      if (SCRIPT_URL === "https://script.google.com/macros/s/AKfycbzHCErmQ1ZlFWdtEPAdsZHoFVDAx8vXQ_OI8rT4SU2MieTbH5pp_yqcgo2JQcknCFdM/exec" || !SCRIPT_URL) {
-        alert("Silakan masukkan SCRIPT_URL Google Apps Script Anda terlebih dahulu!");
-        return;
-      }
 
       const studentIdInput = document.getElementById("studentId");
       const statusSelect = document.getElementById("statusAbsensi");
@@ -340,7 +328,7 @@
         }
       } catch (err) {
         console.error("Terjadi kesalahan:", err);
-        alert("Gagal terhubung ke Google Sheets. Pastikan 'Who has access' diatur ke 'Anyone'.");
+        alert("Gagal terhubung ke Google Sheets. Pastikan akses deployment di Apps Script sudah diatur ke 'Anyone'.");
       } finally {
         btnSubmit.disabled = false;
         btnSubmit.innerText = "Simpan Presensi";
