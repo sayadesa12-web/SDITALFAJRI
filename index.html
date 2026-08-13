@@ -187,7 +187,7 @@
     // ==========================================
     // PASTE URL WEB APP APPS SCRIPT ANDA DI SINI
     // ==========================================
-    const SCRIPT_URL = "PASTE_URL_WEB_APP_ANDA_DI_SINI";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHCErmQ1ZlFWdtEPAdsZHoFVDAx8vXQ_OI8rT4SU2MieTbH5pp_yqcgo2JQcknCFdM/exec";
 
     let rawDataAbsensi = [];
     let statusAktif = "Semua";
@@ -265,7 +265,7 @@
 
     // Ambil Data Presensi dari Google Sheets
     async function muatRekapHariIni() {
-      if (SCRIPT_URL === "PASTE_URL_WEB_APP_ANDA_DI_SINI" || !SCRIPT_URL) {
+      if (SCRIPT_URL === "https://script.google.com/macros/s/AKfycbzHCErmQ1ZlFWdtEPAdsZHoFVDAx8vXQ_OI8rT4SU2MieTbH5pp_yqcgo2JQcknCFdM/exec" || !SCRIPT_URL) {
         console.warn("URL Web App belum diisi!");
         return;
       }
@@ -290,7 +290,7 @@
     async function handleFormSubmit(e) {
       if (e) e.preventDefault();
 
-      if (SCRIPT_URL === "https://script.google.com/macros/s/AKfycbz-c3pLSMgDOI7hWx4e0qIYYpWlFXBQFy-q0l2P7UlhxoB3TRDWGu9vlHP_I71aJsrt/exec" || !SCRIPT_URL) {
+      if (SCRIPT_URL === "https://script.google.com/macros/s/AKfycbzHCErmQ1ZlFWdtEPAdsZHoFVDAx8vXQ_OI8rT4SU2MieTbH5pp_yqcgo2JQcknCFdM/exec" || !SCRIPT_URL) {
         alert("Silakan masukkan SCRIPT_URL Google Apps Script Anda terlebih dahulu!");
         return;
       }
