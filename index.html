@@ -224,7 +224,386 @@
     <!-- SCRIPT LOGIKA UTAMA -->
     <script>
         // MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI SINI
+        const SCRIPT_URL = "<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Presensi - SDIT AL FAJRI CAHAYA UMAT</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- HTML5 QRCode Scanner -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    
+    <style>
+        .bg-emerald-gradient {
+            background: linear-gradient(135deg, #022c22 0%, #064e3b 60%, #0f766e 100%);
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.85); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop { animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        
+        @media print {
+            body * { visibility: hidden; }
+            #area-cetak, #area-cetak * { visibility: visible; }
+            #area-cetak { position: absolute; left: 0; top: 0; width: 100%; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen pb-12">
+
+    <!-- HEADER / KOP APLIKASI -->
+    <header class="bg-emerald-800 text-white shadow-lg no-print border-b-2 border-amber-400">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-white p-1 rounded-full shadow-md flex items-center justify-center border-2 border-amber-400 shrink-0">
+                    <img src="https://via.placeholder.com/100?text=SDIT" id="school-logo" alt="Logo SDIT AL FAJRI" class="w-full h-full object-contain">
+                </div>
+                <div>
+                    <h1 class="text-base md:text-lg font-bold tracking-wide">SDIT AL FAJRI CAHAYA UMAT</h1>
+                    <p class="text-xs text-emerald-200">Sistem Presensi Digital Barcode & Ekskul</p>
+                </div>
+            </div>
+            <!-- Live Clock -->
+            <div class="bg-emerald-950/60 px-3 py-1.5 rounded-xl border border-emerald-600/50 text-center">
+                <div id="live-time" class="text-sm font-mono font-bold text-amber-300">00:00:00 WIB</div>
+                <div id="live-date" class="text-[10px] text-emerald-200">--</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-6xl mx-auto px-4 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6 no-print">
+
+        <!-- PANEL KIRI: SCANNER & KONTROL (5 Cols) -->
+        <section class="lg:col-span-5 space-y-5">
+            
+            <!-- Mode Presensi & Status -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+                        <i data-lucide="layers" class="w-4 h-4 inline mr-1 text-emerald-600"></i> Mode Kegiatan
+                    </label>
+                    <select id="mode-presensi" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-xl focus:ring-2 focus:ring-emerald-500 p-2.5 font-bold">
+                        <optgroup label="Utama">
+                            <option value="Harian Sekolah" selected>Presensi Masuk Harian</option>
+                        </optgroup>
+                        <optgroup label="Ekstrakurikuler">
+                            <option value="Ekskul Pramuka">Ekskul Pramuka</option>
+                            <option value="Ekskul BTQ / Tahfidz">Ekskul BTQ / Tahfidz</option>
+                            <option value="Ekskul Pencak Silat">Ekskul Pencak Silat</option>
+                            <option value="Ekskul Panahan">Ekskul Panahan</option>
+                            <option value="Ekskul Futsal">Ekskul Futsal</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+                        <i data-lucide="user-check" class="w-4 h-4 inline mr-1 text-emerald-600"></i> Status Presensi
+                    </label>
+                    <div class="grid grid-cols-4 gap-1.5">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="status-kehadiran" value="Hadir" checked class="peer hidden">
+                            <div class="text-center py-2 border rounded-xl text-xs font-bold border-slate-200 text-slate-600 peer-checked:bg-emerald-600 peer-checked:text-white peer-checked:border-emerald-600 transition">Hadir</div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="status-kehadiran" value="Sakit" class="peer hidden">
+                            <div class="text-center py-2 border rounded-xl text-xs font-bold border-slate-200 text-slate-600 peer-checked:bg-amber-500 peer-checked:text-white peer-checked:border-amber-500 transition">Sakit</div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="status-kehadiran" value="Izin" class="peer hidden">
+                            <div class="text-center py-2 border rounded-xl text-xs font-bold border-slate-200 text-slate-600 peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 transition">Izin</div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="status-kehadiran" value="Alfa" class="peer hidden">
+                            <div class="text-center py-2 border rounded-xl text-xs font-bold border-slate-200 text-slate-600 peer-checked:bg-rose-600 peer-checked:text-white peer-checked:border-rose-600 transition">Alfa</div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Box Scanner Kamera -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 text-center">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                        <i data-lucide="camera" class="w-4 h-4 text-emerald-600"></i> Kamera Pemindai HP
+                    </h2>
+                    <span id="scanner-status" class="px-2 py-0.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 rounded-full border border-emerald-200">Aktif</span>
+                </div>
+
+                <div id="reader" class="overflow-hidden rounded-xl border-2 border-emerald-600 bg-black min-h-[220px]"></div>
+
+                <!-- Input Manual & Catatan Keterangan -->
+                <form id="form-manual" onsubmit="event.preventDefault(); processManualSubmit();" class="mt-3 space-y-2">
+                    <input type="text" id="input-nis" placeholder="Ketik NIS / Scan Barcode..." class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <input type="text" id="input-keterangan" placeholder="Keterangan (Opsional untuk Sakit/Izin)..." class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-1 shadow">
+                        <i data-lucide="send" class="w-3.5 h-3.5"></i> Simpan Data Presensi
+                    </button>
+                </form>
+            </div>
+
+        </section>
+
+        <!-- PANEL KANAN: REKAP DATA (7 Cols) -->
+        <section class="lg:col-span-7 space-y-5">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
+                    <div>
+                        <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                            <i data-lucide="clipboard-list" class="w-4 h-4 text-emerald-600"></i> Rekap Presensi Realtime
+                        </h2>
+                        <p class="text-[11px] text-slate-500">Terhubung langsung dengan Database Google Sheets</p>
+                    </div>
+
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <button onclick="loadDataFromSheets()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border rounded-xl text-xs font-semibold">
+                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <button onclick="window.print()" class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-3 py-2 rounded-xl shadow transition">
+                            <i data-lucide="printer" class="w-3.5 h-3.5"></i> Cetak Laporan PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-slate-200 max-h-[420px] overflow-y-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="sticky top-0 bg-emerald-800 text-white font-semibold uppercase text-[10px]">
+                            <tr>
+                                <th class="p-2.5">Waktu</th>
+                                <th class="p-2.5">NIS & Nama Siswa</th>
+                                <th class="p-2.5">Kategori</th>
+                                <th class="p-2.5 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabel-presensi" class="divide-y divide-slate-100 text-slate-700">
+                            <tr>
+                                <td colspan="4" class="p-4 text-center text-slate-400">Memuat data presensi...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- POP-UP NOTIFIKASI SISWA SCAN (2 DETIK) -->
+    <div id="student-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl p-5 w-full max-w-xs text-center border-4 border-amber-400 shadow-2xl animate-pop relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-14 bg-emerald-800"></div>
+            <div class="relative z-10 -mt-1 mb-2">
+                <img id="modal-photo" src="https://via.placeholder.com/150?text=Siswa" alt="Foto Siswa" class="w-20 h-20 rounded-full mx-auto border-4 border-white shadow-md object-cover bg-amber-50">
+            </div>
+            <div class="relative z-10">
+                <h3 id="modal-name" class="text-sm font-bold text-slate-800 leading-tight">NAMA SISWA</h3>
+                <p id="modal-class" class="text-xs text-emerald-700 font-semibold mt-0.5">KELAS</p>
+                <div class="mt-3 pt-2 border-t border-slate-100 flex justify-between items-center text-[11px]">
+                    <span class="text-slate-400">Waktu:</span>
+                    <span id="modal-time" class="font-bold text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded">--:-- WIB</span>
+                </div>
+                <div id="modal-badge" class="mt-2.5 bg-emerald-600 text-white py-1 rounded-xl font-bold text-xs tracking-wide uppercase shadow">
+                    PRESENSI BERHASIL
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AREA CETAK PDF -->
+    <div id="area-cetak" class="hidden print:block p-8 bg-white font-serif">
+        <div class="border-b-2 border-slate-900 pb-3 mb-4 text-center">
+            <h1 class="text-lg font-bold uppercase text-slate-900">SDIT AL FAJRI CAHAYA UMAT</h1>
+            <p class="text-xs text-slate-600">LAPORAN REKAPITULASI PRESENSI SISWA</p>
+            <p class="text-[10px] text-slate-500 mt-0.5">Tanggal Cetak: <span id="cetak-tanggal">--</span></p>
+        </div>
+        <table class="w-full text-xs border-collapse border border-slate-400 mb-6">
+            <thead>
+                <tr class="bg-slate-100 text-slate-800">
+                    <th class="border border-slate-400 p-2">Waktu</th>
+                    <th class="border border-slate-400 p-2">NIS</th>
+                    <th class="border border-slate-400 p-2">Nama Siswa</th>
+                    <th class="border border-slate-400 p-2">Kategori</th>
+                    <th class="border border-slate-400 p-2">Status</th>
+                    <th class="border border-slate-400 p-2">Keterangan</th>
+                </tr>
+            </thead>
+            <tbody id="tabel-cetak"></tbody>
+        </table>
+        <div class="flex justify-between text-xs mt-10 px-6">
+            <div class="text-center">
+                <p class="mb-14">Mengetahui,<br><b>Kepala Sekolah</b></p>
+                <p class="underline font-bold">( _______________________ )</p>
+            </div>
+            <div class="text-center">
+                <p class="mb-14">Bekasi, <span id="cetak-tgl-ttd">--</span><br><b>Guru Piket / Pembina</b></p>
+                <p class="underline font-bold">( _______________________ )</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT LOGIKA UTAMA -->
+    <script>
+        // MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI SINI
         const SCRIPT_URL = "GANTI_DENGAN_URL_WEB_APP_ANDA";
+
+        let html5QrcodeScanner = null;
+        let isProcessing = false;
+
+        lucide.createIcons();
+
+        // Clock Realtime
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('live-time').innerText = now.toLocaleTimeString('id-ID') + ' WIB';
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const dateStr = now.toLocaleDateString('id-ID', options);
+            document.getElementById('live-date').innerText = dateStr;
+            document.getElementById('cetak-tanggal').innerText = dateStr;
+            document.getElementById('cetak-tgl-ttd').innerText = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+        }, 1000);
+
+        // Inisialisasi Scanner Kamera HP
+        function initScanner() {
+            html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
+                fps: 15, 
+                qrbox: { width: 180, height: 180 },
+                facingMode: "environment"
+            });
+            html5QrcodeScanner.render(onScanSuccess);
+        }
+
+        function onScanSuccess(studentId) {
+            if (isProcessing) return;
+            isProcessing = true;
+
+            if (navigator.vibrate) navigator.vibrate(200);
+
+            const kategori = document.getElementById('mode-presensi').value;
+            const status = document.querySelector('input[name="status-kehadiran"]:checked').value;
+            const keterangan = document.getElementById('input-keterangan').value.trim() || "-";
+
+            // Efek suara masukan
+            speakWelcome("Siswa ID " + studentId);
+
+            // Pop-up Notifikasi 2 Detik
+            showModal(studentId, status);
+
+            // Kirim Data ke Google Sheets
+            sendDataToSheets(studentId, kategori, status, keterangan);
+
+            setTimeout(() => {
+                hideModal();
+                isProcessing = false;
+            }, 2000);
+        }
+
+        function processManualSubmit() {
+            const nis = document.getElementById('input-nis').value.trim();
+            if(nis) {
+                onScanSuccess(nis);
+                document.getElementById('input-nis').value = '';
+                document.getElementById('input-keterangan').value = '';
+            }
+        }
+
+        function showModal(id, status) {
+            document.getElementById('modal-name').innerText = "NIS: " + id;
+            document.getElementById('modal-class').innerText = document.getElementById('mode-presensi').value;
+            document.getElementById('modal-photo').src = "https://via.placeholder.com/150/064e3b/FFFFFF?text=" + id;
+            document.getElementById('modal-time').innerText = new Date().toLocaleTimeString('id-ID') + ' WIB';
+            document.getElementById('modal-badge').innerText = "PRESENSI " + status.toUpperCase();
+            document.getElementById('student-modal').classList.remove('hidden');
+        }
+
+        function hideModal() {
+            document.getElementById('student-modal').classList.add('hidden');
+        }
+
+        function speakWelcome(nama) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const msg = new SpeechSynthesisUtterance(`Selamat datang, ${nama}`);
+                msg.lang = 'id-ID';
+                window.speechSynthesis.speak(msg);
+            }
+        }
+
+        function sendDataToSheets(studentId, kategori, status, keterangan) {
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ studentId: studentId, kategori: kategori, status: status, keterangan: keterangan })
+            })
+            .then(() => loadDataFromSheets())
+            .catch(e => console.log(e));
+        }
+
+        function loadDataFromSheets() {
+            fetch(SCRIPT_URL)
+            .then(res => res.json())
+            .then(data => {
+                renderTabel(data.reverse());
+            })
+            .catch(() => {
+                document.getElementById('tabel-presensi').innerHTML = `<tr><td colspan="4" class="p-3 text-center text-rose-600 font-semibold">Gagal memuat data dari Google Sheets.</td></tr>`;
+            });
+        }
+
+        function renderTabel(data) {
+            const tbody = document.getElementById('tabel-presensi');
+            const tbodyCetak = document.getElementById('tabel-cetak');
+            
+            if(data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-slate-400">Belum ada data presensi hari ini.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = data.map(row => {
+                let badgeColor = "bg-emerald-100 text-emerald-800";
+                if(row.status === "Sakit") badgeColor = "bg-amber-100 text-amber-800";
+                if(row.status === "Izin") badgeColor = "bg-blue-100 text-blue-800";
+                if(row.status === "Alfa") badgeColor = "bg-rose-100 text-rose-800";
+
+                return `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-2.5 font-mono text-slate-500">${row.waktu}</td>
+                        <td class="p-2.5">
+                            <div class="font-bold text-slate-800">${row.nama}</div>
+                            <div class="text-[10px] text-slate-400">NIS: ${row.studentId} • ${row.kelas}</div>
+                        </td>
+                        <td class="p-2.5"><span class="px-2 py-0.5 rounded bg-slate-100 border text-[10px] font-semibold">${row.kategori}</span></td>
+                        <td class="p-2.5 text-center"><span class="px-2 py-0.5 rounded-full ${badgeColor} font-bold text-[10px]">${row.status}</span></td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Isi Tabel Cetak PDF
+            tbodyCetak.innerHTML = data.map(row => `
+                <tr>
+                    <td class="border border-slate-400 p-1.5">${row.waktu}</td>
+                    <td class="border border-slate-400 p-1.5">${row.studentId}</td>
+                    <td class="border border-slate-400 p-1.5">${row.nama}</td>
+                    <td class="border border-slate-400 p-1.5">${row.kategori}</td>
+                    <td class="border border-slate-400 p-1.5">${row.status}</td>
+                    <td class="border border-slate-400 p-1.5">${row.keterangan || "-"}</td>
+                </tr>
+            `).join('');
+        }
+
+        window.onload = () => {
+            initScanner();
+            loadDataFromSheets();
+        };
+    </script>
+</body>
+</html>";
 
         let html5QrcodeScanner = null;
         let isProcessing = false;
